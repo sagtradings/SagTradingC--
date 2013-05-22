@@ -72,7 +72,7 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_unSubscribeL
 			}
 		}
 }
-
+//
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteRequest
   (JNIEnv *, jobject, jobjectArray){
 	// create a CThostFtdcMdApi instance
