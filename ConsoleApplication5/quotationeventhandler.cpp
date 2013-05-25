@@ -9,7 +9,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			~quotationeventhandler(){}
 
 		virtual void OnFrontConnected(){
-			printf("the front is connected");
+			//printf("the front is connected");
 			CThostFtdcReqUserLoginField reqUserLogin;
 			// get BrokerID
 			
@@ -33,7 +33,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 		}
 
 		virtual void OnFrontDisconnected(int nReason){
-			printf("front disconnected");
+			//printf("front disconnected");
 		}
 
 	
@@ -42,9 +42,33 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 		
 
 		virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-			printf("OnRspUserLogin:\n");
-			printf("ErrorCode=[%d], ErrorMsg=[%s]\n", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
-			printf("RequestID=[%d], Chain=[%d]\n", nRequestID, bIsLast);
+						JNIEnv * g_env;
+			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
+			if(success != JNI_OK){
+				//printf("attempting to resync jvm to thread\n");
+				jint attachSuccess = cachedJvm ->AttachCurrentThread((void**)&g_env, NULL);
+				if(attachSuccess == 0){
+					//printf("resync successful!\n");
+				}
+				else{
+					//printf("resync unsuccessful\n");
+					return;
+				}
+			}
+			list<jobject>::iterator it = observers.begin();			
+			while (it != observers.end()) {
+				jobject &obj = *it;
+				jclass cls = g_env->GetObjectClass(obj);
+				jmethodID mid = g_env->GetMethodID(cls, "onRspUserLogin", "()V");
+								g_env->CallVoidMethod(obj, mid);
+				it++;
+			}
+			
+			
+			
+			//printf("OnRspUserLogin:\n");
+			//printf("ErrorCode=[%d], ErrorMsg=[%s]\n", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
+			//printf("RequestID=[%d], Chain=[%d]\n", nRequestID, bIsLast);
 			if (pRspInfo->ErrorID != 0) {
 				// login failure, the client should handle this error.
 				printf("Failed to login, errorcode=%d errormsg=%s requestid=%d=%d", pRspInfo->ErrorID, pRspInfo->ErrorMsg, nRequestID, bIsLast);
@@ -53,11 +77,11 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			// login success, then subscribe the quotation information
 			//char * Instrumnet[]={"IF0809","IF0812"};
 			//char * Instrumnet[]={"CADC","CAIHF"};
-			char * Instrumnet[]={"IF1306","IF1306"};
+			char * Instrumnet[]={"IF1309"};
 
-			m_pUserApi->SubscribeMarketData (Instrumnet,2);
+			m_pUserApi->SubscribeMarketData (Instrumnet,1);
 			
-			printf("marketDataSubscribed");
+			//printf("marketDataSubscribed");
 
 			
 			
@@ -68,7 +92,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 			//or unsubscribe the quotation
 			//m_pUserApi->UnSubscribeMarketData (Instrumnet,2);
-			printf("sent quoatation request");
+			//printf("sent quoatation request");
 			
 		}
 
@@ -81,13 +105,13 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			JNIEnv * g_env;
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
-				printf("attempting to resync jvm to thread\n");
+			//	printf("attempting to resync jvm to thread\n");
 				jint attachSuccess = cachedJvm ->AttachCurrentThread((void**)&g_env, NULL);
 				if(attachSuccess == 0){
-					printf("resync successful!\n");
+					//printf("resync successful!\n");
 				}
 				else{
-					printf("resync unsuccessful\n");
+					//printf("resync unsuccessful\n");
 					return;
 				}
 			}
@@ -219,7 +243,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 				
 
 				if (mid == 0) {
-					printf("mid was 0!!!\n");
+					//printf("mid was 0!!!\n");
 					return;
 				}
 
@@ -235,21 +259,21 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 
 		virtual void OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-			printf("You did it this time jerk");
+			//printf("You did it this time jerk");
 		}
 
 		virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-			printf("OnRspError:\n");
-			printf("ErrorCode=[%d], ErrorMsg=[%s]\n", pRspInfo->ErrorID,pRspInfo->ErrorMsg);
-			printf("RequestID=[%d], Chain=[%d]\n", nRequestID, bIsLast);
+			//printf("OnRspError:\n");
+			//printf("ErrorCode=[%d], ErrorMsg=[%s]\n", pRspInfo->ErrorID,pRspInfo->ErrorMsg);
+			//printf("RequestID=[%d], Chain=[%d]\n", nRequestID, bIsLast);
 		}
 
 		virtual void OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
-			printf("SUBSCRIBBBED MARKET DATA!!!!!");
+			//printf("SUBSCRIBBBED MARKET DATA!!!!!");
 		}
 
 		virtual void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
-			printf("OnRspQryInstrument\n\n\n");
+			//printf("OnRspQryInstrument\n\n\n");
 		}
 
 

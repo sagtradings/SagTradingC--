@@ -29,7 +29,7 @@ int main()
 
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jobjectArray array){
 	 CThostFtdcTraderApi *pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi();
-	 printf("successfully made it to the cpp\n");
+	// printf("successfully made it to the cpp\n");
 	 TraderEventHandler sh(pUserApi);
 	 //sh.setJNIEnvironment(env);
 	 pUserApi -> RegisterSpi(&sh);
@@ -47,7 +47,7 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMes
 	 
 	 pUserApi ->Release();
 	 
-	 printf("exiting program");
+	// printf("exiting program");
 	 observers.clear();
 	
 }
@@ -59,7 +59,7 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendReturnOr
 };
 
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_subscribeListener(JNIEnv *env, jobject caller, jobject subscriber){
-	printf("subscribinganobject\n");
+	//printf("subscribinganobject\n");
 	jobject o = env->NewGlobalRef(subscriber);
 	observers.push_back(o);
 }
@@ -145,6 +145,6 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendTradeReq
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved){
 	cachedJvm = jvm;
-	printf("JVM on load");
+	//printf("JVM on load");
 	return JNI_VERSION_1_6;
 }
