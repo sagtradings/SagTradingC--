@@ -87,11 +87,6 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 			CThostFtdcQryDepthMarketDataField field;
 			strcpy_s(field.InstrumentID, "CADC");
-			//m_pTraderApi ->ReqQryDepthMarketData(&field, 0);
-
-			//or unsubscribe the quotation
-			//m_pUserApi->UnSubscribeMarketData (Instrumnet,2);
-			//printf("sent quoatation request");
 			
 		}
 

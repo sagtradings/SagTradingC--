@@ -26,10 +26,10 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_unSubscribeL
 /*
  * Class:     nativeinterfaces_DefaultNativeInterface
  * Method:    sendLoginMessage
- * Signature: ([Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMessage
-  (JNIEnv *, jobject, jobjectArray);
+  (JNIEnv *, jobject, jstring, jstring, jstring);
 
 /*
  * Class:     nativeinterfaces_DefaultNativeInterface

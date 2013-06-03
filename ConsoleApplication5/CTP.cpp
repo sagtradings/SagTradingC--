@@ -27,7 +27,7 @@ int main()
 	return 0;
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jobjectArray array){
+JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){
 	 CThostFtdcTraderApi *pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi();
 	// printf("successfully made it to the cpp\n");
 	 TraderEventHandler sh(pUserApi);
