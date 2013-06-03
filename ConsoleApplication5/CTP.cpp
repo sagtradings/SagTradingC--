@@ -146,5 +146,6 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendTradeReq
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved){
 	cachedJvm = jvm;
 	//printf("JVM on load");
-	return JNI_VERSION_1_6;
+	return JNI_VERSION_1_1;
+;
 }

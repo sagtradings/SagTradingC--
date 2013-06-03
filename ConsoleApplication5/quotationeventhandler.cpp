@@ -1,6 +1,5 @@
 
 #include "globals.h"
-#include <ctime>
 
 
 class quotationeventhandler : public CThostFtdcMdSpi{
@@ -77,7 +76,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			// login success, then subscribe the quotation information
 			//char * Instrumnet[]={"IF0809","IF0812"};
 			//char * Instrumnet[]={"CADC","CAIHF"};
-			char * Instrumnet[]={"IF1309"};
+			char * Instrumnet[]={"IF1307"};
 
 			m_pUserApi->SubscribeMarketData (Instrumnet,1);
 			
