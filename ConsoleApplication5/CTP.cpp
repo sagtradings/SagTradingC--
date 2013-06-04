@@ -71,10 +71,8 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_unSubscribeL
 //
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteRequest
   (JNIEnv *env, jobject callerObject, jobjectArray instruments){
-	printf("sendQuoteRequest\n");
 	int arrayLen = env->GetArrayLength(instruments);	
 	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
-	printf("start of copy loop\n");
 	for(int i = 0, n = arrayLen; i < n; i++){
 		printf("retrieving jobject\n");
 		jobject object = env->GetObjectArrayElement(instruments, i);
@@ -82,33 +80,43 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteReq
 		jstring j_object = (jstring)object;
 		printf("getting StringUTFChars\n");
 		const char *c_castedObject = env ->GetStringUTFChars(j_object, 0);
-		
-		//printf(" malloc for c_instruments[%i]:%s\n", i, c_castedObject);
-		//printf("initial value: %sxxx\n", c_instruments[i]);
 		c_instruments[i] = (char*)malloc(7 * sizeof(char));
-		printf("copying string\n");
 		strcpy_s(c_instruments[i], 7, c_castedObject);
-		printf("deleting local ref\n");
 		env->DeleteLocalRef(j_object);
-		printf("releasing chars\n");
 		env->ReleaseStringUTFChars(j_object, c_castedObject);
 
 	}
-	printf("end of copy loop\n");
-	for(int i = 0, n = arrayLen; i < n; i++){
-		printf("[%i]:%s\n", i, c_instruments[i]);
-	}
 	pUserApi->SubscribeMarketData(c_instruments, arrayLen);
+	
 	for(int i = 0, n = arrayLen; i < n; i++){
 		free(c_instruments[i]);
 	}
 	free(c_instruments);
-	printf("exiting method\n");
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendTradeRequest
-  (JNIEnv *, jobject, jobjectArray){
-		// create a CThostFtdcMdApi instance
+JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendUnsubscribeQuoteRequest
+  (JNIEnv *env, jobject callerObject, jobjectArray instruments){
+	int arrayLen = env->GetArrayLength(instruments);	
+	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
+	for(int i = 0, n = arrayLen; i < n; i++){
+		printf("retrieving jobject\n");
+		jobject object = env->GetObjectArrayElement(instruments, i);
+		printf("casting jobject to jstring\n");
+		jstring j_object = (jstring)object;
+		printf("getting StringUTFChars\n");
+		const char *c_castedObject = env ->GetStringUTFChars(j_object, 0);
+		c_instruments[i] = (char*)malloc(7 * sizeof(char));
+		strcpy_s(c_instruments[i], 7, c_castedObject);
+		env->DeleteLocalRef(j_object);
+		env->ReleaseStringUTFChars(j_object, c_castedObject);
+
+	}
+	pUserApi->UnSubscribeMarketData(c_instruments, arrayLen);
+	
+	for(int i = 0, n = arrayLen; i < n; i++){
+		free(c_instruments[i]);
+	}
+	free(c_instruments);
 
 
 

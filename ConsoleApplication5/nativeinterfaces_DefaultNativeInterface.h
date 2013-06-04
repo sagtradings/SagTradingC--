@@ -57,10 +57,10 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteReq
 
 /*
  * Class:     nativeinterfaces_DefaultNativeInterface
- * Method:    sendTradeRequest
+ * Method:    sendUnsubscribeQuoteRequest
  * Signature: ([Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendTradeRequest
+JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendUnsubscribeQuoteRequest
   (JNIEnv *, jobject, jobjectArray);
 
 #ifdef __cplusplus
