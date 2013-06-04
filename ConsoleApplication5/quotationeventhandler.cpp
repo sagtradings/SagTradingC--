@@ -8,26 +8,8 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			~quotationeventhandler(){}
 
 		virtual void OnFrontConnected(){
-			//printf("the front is connected");
-			CThostFtdcReqUserLoginField reqUserLogin;
-			// get BrokerID
-			
-			const char  *userID = "00000008";
-			const char  *password = "123321";
-			const char  *brokerID = "1013";
-			strcpy_s(reqUserLogin.UserID, userID);
-		
-			strcpy_s(reqUserLogin.Password, password);
-			strcpy_s(reqUserLogin.BrokerID, brokerID);
-
-			//delete userID;
-			//delete password;
-			//delete brokerID;
-
-
-			// send the login request
-			m_pUserApi->ReqUserLogin(&reqUserLogin, 0);
-			
+			printf("the front is connected\n");
+			SetEvent(g_hEvent);
 
 		}
 
@@ -42,6 +24,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 		virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
 						JNIEnv * g_env;
+			printf("login success\n");
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
 				//printf("attempting to resync jvm to thread\n");
@@ -62,31 +45,13 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 								g_env->CallVoidMethod(obj, mid);
 				it++;
 			}
-			
-			
-			
-			//printf("OnRspUserLogin:\n");
-			//printf("ErrorCode=[%d], ErrorMsg=[%s]\n", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
-			//printf("RequestID=[%d], Chain=[%d]\n", nRequestID, bIsLast);
 			if (pRspInfo->ErrorID != 0) {
 				// login failure, the client should handle this error.
 				printf("Failed to login, errorcode=%d errormsg=%s requestid=%d=%d", pRspInfo->ErrorID, pRspInfo->ErrorMsg, nRequestID, bIsLast);
 				return;
 			}
-			// login success, then subscribe the quotation information
-			//char * Instrumnet[]={"IF0809","IF0812"};
-			//char * Instrumnet[]={"CADC","CAIHF"};
-			char * Instrumnet[]={"IF1307"};
+			SetEvent(g_hEvent);
 
-			m_pUserApi->SubscribeMarketData (Instrumnet,1);
-			
-			//printf("marketDataSubscribed");
-
-			
-			
-
-			CThostFtdcQryDepthMarketDataField field;
-			strcpy_s(field.InstrumentID, "CADC");
 			
 		}
 

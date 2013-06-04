@@ -17,8 +17,8 @@ TThostFtdcBrokerIDType g_chBrokerID;
 TThostFtdcUserIDType g_chUserID;
 
 list<jobject> observers;
-
-
+CThostFtdcMdApi *pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
+quotationeventhandler sh(pUserApi);
 
 
 
@@ -28,27 +28,23 @@ int main()
 }
 
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){
-	 CThostFtdcTraderApi *pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi();
-	// printf("successfully made it to the cpp\n");
-	 TraderEventHandler sh(pUserApi);
-	 //sh.setJNIEnvironment(env);
+	 
+	 printf("sendLoginMessage()\n");
 	 pUserApi -> RegisterSpi(&sh);
-	 pUserApi -> SubscribePrivateTopic(THOST_TERT_RESUME);
-	 pUserApi -> SubscribePublicTopic(THOST_TERT_RESUME);
 	 pUserApi -> RegisterFront("tcp://218.1.96.8:41213");
-	 //CThostFtdcReqUserLoginField field();
-	 
-	 //pUserApi -> ReqUserLogin(
-
+	 printf("initing\n");
 	 pUserApi -> Init();
-
-	 WaitForSingleObject(g_hEvent, WAIT_TIMEOUT);
-
-	 
-	 pUserApi ->Release();
-	 
-	// printf("exiting program");
-	 observers.clear();
+	 printf("after init and waiting for event\n");
+	 WaitForSingleObject(g_hEvent, INFINITE);
+	 ResetEvent(g_hEvent);
+	 printf("after reset event\n");
+	 CThostFtdcReqUserLoginField reqUserLogin;
+	 strcpy_s(reqUserLogin.UserID, env->GetStringUTFChars(investorId, false));
+	 strcpy_s(reqUserLogin.Password, env->GetStringUTFChars(password, false));
+	 strcpy_s(reqUserLogin.BrokerID, env->GetStringUTFChars(brokerId, false));
+	 pUserApi->ReqUserLogin(&reqUserLogin, 0);
+	 WaitForSingleObject(g_hEvent, INFINITE);
+	 ResetEvent(g_hEvent);
 	
 }
 
@@ -74,71 +70,46 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_unSubscribeL
 }
 //
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteRequest
-  (JNIEnv *, jobject, jobjectArray){
-	// create a CThostFtdcMdApi instance
-	CThostFtdcMdApi *pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
-	CThostFtdcTraderApi *pTraderApi = CThostFtdcTraderApi::CreateFtdcTraderApi();
-	// create an event handler instance
-	quotationeventhandler sh(pUserApi);
-	TraderEventHandler th(pTraderApi);
-	// register an event handler instance
-	
-	pTraderApi->RegisterSpi(&th);
-	// register the CTP front address and port
-	
-	//pTraderApi ->RegisterFront("tcp://218.1.96.8:41205");
-	pTraderApi->SubscribePrivateTopic(THOST_TERT_RESUME);
-	pTraderApi->SubscribePublicTopic(THOST_TERT_RESUME);
-	
-	// start the connection between client and CTP server
-	
-	//pTraderApi->Init();
-	// waiting for the quotation data
-	//WaitForSingleObject(g_hEvent, INFINITE);
-	// release API instance
+  (JNIEnv *env, jobject callerObject, jobjectArray instruments){
+	printf("sendQuoteRequest\n");
+	int arrayLen = env->GetArrayLength(instruments);	
+	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
+	printf("start of copy loop\n");
+	for(int i = 0, n = arrayLen; i < n; i++){
+		printf("retrieving jobject\n");
+		jobject object = env->GetObjectArrayElement(instruments, i);
+		printf("casting jobject to jstring\n");
+		jstring j_object = (jstring)object;
+		printf("getting StringUTFChars\n");
+		const char *c_castedObject = env ->GetStringUTFChars(j_object, 0);
+		
+		//printf(" malloc for c_instruments[%i]:%s\n", i, c_castedObject);
+		//printf("initial value: %sxxx\n", c_instruments[i]);
+		c_instruments[i] = (char*)malloc(7 * sizeof(char));
+		printf("copying string\n");
+		strcpy_s(c_instruments[i], 7, c_castedObject);
+		printf("deleting local ref\n");
+		env->DeleteLocalRef(j_object);
+		printf("releasing chars\n");
+		env->ReleaseStringUTFChars(j_object, c_castedObject);
 
-	//pTraderApi -> Release();
-
-	pUserApi->RegisterSpi(&sh);
-	pUserApi->RegisterFront("tcp://218.1.96.8:41213");
-	
-	pUserApi->Init();
-	WaitForSingleObject(g_hEvent, INFINITE);
-	pUserApi->Release();
+	}
+	printf("end of copy loop\n");
+	for(int i = 0, n = arrayLen; i < n; i++){
+		printf("[%i]:%s\n", i, c_instruments[i]);
+	}
+	pUserApi->SubscribeMarketData(c_instruments, arrayLen);
+	for(int i = 0, n = arrayLen; i < n; i++){
+		free(c_instruments[i]);
+	}
+	free(c_instruments);
+	printf("exiting method\n");
 }
 
 JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendTradeRequest
   (JNIEnv *, jobject, jobjectArray){
 		// create a CThostFtdcMdApi instance
-	CThostFtdcMdApi *pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
-	CThostFtdcTraderApi *pTraderApi = CThostFtdcTraderApi::CreateFtdcTraderApi();
-	// create an event handler instance
-	quotationeventhandler sh(pUserApi);
-	TraderEventHandler th(pTraderApi);
-	// register an event handler instance
-	
-	pTraderApi->RegisterSpi(&th);
-	// register the CTP front address and port
-	
-	pTraderApi ->RegisterFront("tcp://218.1.96.8:41205");
-	pTraderApi->SubscribePrivateTopic(THOST_TERT_RESUME);
-	pTraderApi->SubscribePublicTopic(THOST_TERT_RESUME);
-	
-	// start the connection between client and CTP server
-	
-	pTraderApi->Init();
-	// waiting for the quotation data
-	WaitForSingleObject(g_hEvent, INFINITE);
-	// release API instance
 
-	pTraderApi -> Release();
-
-	//pUserApi->RegisterSpi(&sh);
-	//pUserApi->RegisterFront("tcp://218.1.96.8:41213");
-	
-	//pUserApi->Init();
-	//WaitForSingleObject(g_hEvent, INFINITE);
-	//pUserApi->Release();
 
 
 }
