@@ -23,11 +23,10 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 		
 
 		virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-						JNIEnv * g_env;
-			printf("login success\n");
+			JNIEnv * g_env;
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
-				//printf("attempting to resync jvm to thread\n");
+				printf("attempting to resync jvm to thread\n");
 				jint attachSuccess = cachedJvm ->AttachCurrentThread((void**)&g_env, NULL);
 				if(attachSuccess == 0){
 					//printf("resync successful!\n");
@@ -37,18 +36,27 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 					return;
 				}
 			}
+			int maxOrderRev = atoi(pRspUserLogin->MaxOrderRef);
+
+			printf("Creating Parameter Object LoginResponse\n");
+			jclass parameter = g_env->FindClass("bo/LoginResponse");
+			jmethodID midConstructor = (g_env)->GetMethodID(parameter, "<init>", "()V");
+			jobject paramObject = (g_env)->NewObject(parameter, midConstructor);
+
+			printf("getting ID's 1 - 5\n");
+			jmethodID maxOrderId = g_env->GetMethodID(parameter, "setMaxOrder", "(I)V");
+
+			printf("invoking setters 1 - 5\n");
+			g_env->CallVoidMethod(paramObject, maxOrderId, maxOrderRev + 1);
+
+			printf("notifyinglisteners\n");
 			list<jobject>::iterator it = observers.begin();			
 			while (it != observers.end()) {
 				jobject &obj = *it;
 				jclass cls = g_env->GetObjectClass(obj);
-				jmethodID mid = g_env->GetMethodID(cls, "onRspUserLogin", "()V");
-								g_env->CallVoidMethod(obj, mid);
+				jmethodID mid = g_env->GetMethodID(cls, "onRspUserLogin", "(Lbo/LoginResponse;)V");
+								g_env->CallVoidMethod(obj, mid, paramObject);
 				it++;
-			}
-			if (pRspInfo->ErrorID != 0) {
-				// login failure, the client should handle this error.
-				printf("Failed to login, errorcode=%d errormsg=%s requestid=%d=%d", pRspInfo->ErrorID, pRspInfo->ErrorMsg, nRequestID, bIsLast);
-				return;
 			}
 			SetEvent(g_hEvent);
 
