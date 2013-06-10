@@ -3,7 +3,7 @@
 
 #include "quotationeventhandler.cpp"
 #include "TraderEventHandler.cpp"
-#include "nativeinterfaces_DefaultNativeInterface.h"
+#include "nativeinterfaces_MarketDataNativeInterface.h"
 #include "ThostFtdcTraderApi.h"
 #include "globals.h"
 
@@ -27,7 +27,7 @@ int main()
 	return 0;
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){
 	 
 	 printf("sendLoginMessage()\n");
 	 pUserApi -> RegisterSpi(&sh);
@@ -48,19 +48,17 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendLoginMes
 	
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendOrderInsertMessage(JNIEnv *env, jobject caller, jobjectArray array){
-}
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendReturnOrderMessage(JNIEnv *env, jobject caller, jobjectArray array){
-};
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_subscribeListener(JNIEnv *env, jobject caller, jobject subscriber){
+
+
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_subscribeListener(JNIEnv *env, jobject caller, jobject subscriber){
 	//printf("subscribinganobject\n");
 	jobject o = env->NewGlobalRef(subscriber);
 	observers.push_back(o);
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_unSubscribeListener(JNIEnv *env, jobject caller, jobject subscriber){
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_unSubscribeListener(JNIEnv *env, jobject caller, jobject subscriber){
 		for(list<jobject>::iterator it = observers.begin(); it != observers.end(); ++it){
 			if(env->IsSameObject(*it, subscriber)){
 				observers.erase(it);
@@ -69,7 +67,7 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_unSubscribeL
 		}
 }
 //
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteRequest
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendQuoteRequest
   (JNIEnv *env, jobject callerObject, jobjectArray instruments){
 	int arrayLen = env->GetArrayLength(instruments);	
 	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
@@ -94,7 +92,7 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendQuoteReq
 	free(c_instruments);
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_DefaultNativeInterface_sendUnsubscribeQuoteRequest
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendUnsubscribeQuoteRequest
   (JNIEnv *env, jobject callerObject, jobjectArray instruments){
 	int arrayLen = env->GetArrayLength(instruments);	
 	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
