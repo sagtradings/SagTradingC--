@@ -29,15 +29,14 @@ int main()
 
 JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){
 	 
-	 printf("sendLoginMessage()\n");
 	 pUserApi -> RegisterSpi(&sh);
 	 pUserApi -> RegisterFront("tcp://218.1.96.8:41213");
 	 printf("initing\n");
 	 pUserApi -> Init();
-	 printf("after init and waiting for event\n");
+
 	 WaitForSingleObject(g_hEvent, INFINITE);
 	 ResetEvent(g_hEvent);
-	 printf("after reset event\n");
+
 	 CThostFtdcReqUserLoginField reqUserLogin;
 	 strcpy_s(reqUserLogin.UserID, env->GetStringUTFChars(investorId, false));
 	 strcpy_s(reqUserLogin.Password, env->GetStringUTFChars(password, false));
@@ -72,11 +71,11 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendQuote
 	int arrayLen = env->GetArrayLength(instruments);	
 	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
 	for(int i = 0, n = arrayLen; i < n; i++){
-		printf("retrieving jobject\n");
+
 		jobject object = env->GetObjectArrayElement(instruments, i);
-		printf("casting jobject to jstring\n");
+
 		jstring j_object = (jstring)object;
-		printf("getting StringUTFChars\n");
+
 		const char *c_castedObject = env ->GetStringUTFChars(j_object, 0);
 		c_instruments[i] = (char*)malloc(7 * sizeof(char));
 		strcpy_s(c_instruments[i], 7, c_castedObject);
@@ -97,11 +96,11 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendUnsub
 	int arrayLen = env->GetArrayLength(instruments);	
 	char **c_instruments = (char**)malloc(sizeof(char*) * arrayLen);
 	for(int i = 0, n = arrayLen; i < n; i++){
-		printf("retrieving jobject\n");
+
 		jobject object = env->GetObjectArrayElement(instruments, i);
-		printf("casting jobject to jstring\n");
+
 		jstring j_object = (jstring)object;
-		printf("getting StringUTFChars\n");
+
 		const char *c_castedObject = env ->GetStringUTFChars(j_object, 0);
 		c_instruments[i] = (char*)malloc(7 * sizeof(char));
 		strcpy_s(c_instruments[i], 7, c_castedObject);

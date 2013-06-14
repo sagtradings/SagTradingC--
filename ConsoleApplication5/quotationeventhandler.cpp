@@ -26,7 +26,6 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			JNIEnv * g_env;
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
-				printf("attempting to resync jvm to thread\n");
 				jint attachSuccess = cachedJvm ->AttachCurrentThread((void**)&g_env, NULL);
 				if(attachSuccess == 0){
 					//printf("resync successful!\n");
@@ -38,18 +37,15 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			}
 			int maxOrderRev = atoi(pRspUserLogin->MaxOrderRef);
 
-			printf("Creating Parameter Object LoginResponse\n");
+
 			jclass parameter = g_env->FindClass("bo/LoginResponse");
 			jmethodID midConstructor = (g_env)->GetMethodID(parameter, "<init>", "()V");
 			jobject paramObject = (g_env)->NewObject(parameter, midConstructor);
 
-			printf("getting ID's 1 - 5\n");
 			jmethodID maxOrderId = g_env->GetMethodID(parameter, "setMaxOrder", "(I)V");
 
-			printf("invoking setters 1 - 5\n");
 			g_env->CallVoidMethod(paramObject, maxOrderId, maxOrderRev + 1);
 
-			printf("notifyinglisteners\n");
 			list<jobject>::iterator it = observers.begin();			
 			while (it != observers.end()) {
 				jobject &obj = *it;
@@ -226,7 +222,6 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 
 		virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-			printf("OnRspError\n");
 			JNIEnv * g_env;
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
@@ -243,23 +238,19 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 			list<jobject>::iterator it = observers.begin();			
 			while (it != observers.end()) {
 				
-				printf("getting subscribed object and onRspError method ID\n");
 				jobject &obj = *it;
 				jclass cls = g_env->GetObjectClass(obj);
 				jmethodID mid = g_env->GetMethodID(cls, "onRspError", "(Lbo/ErrorResult;)V");
 
-				printf("Creating Parameter Object ErrorResult\n");
 				jclass parameter = g_env->FindClass("bo/ErrorResult");
 			    jmethodID midConstructor = (g_env)->GetMethodID(parameter, "<init>", "()V");
 				jobject paramObject = (g_env)->NewObject(parameter, midConstructor);
 
-				printf("getting ID's 1 - 5\n");
 				jmethodID errorIDId = g_env->GetMethodID(parameter, "setErrorId", "(I)V");
 				jmethodID errorMessageId = g_env->GetMethodID(parameter, "setErrorMessage", "(Ljava/lang/String;)V");
 				
-				printf("invoking setters 1\n");
 				g_env->CallVoidMethod(paramObject, errorIDId, pRspInfo->ErrorID);
-				printf("invoking setter 2\n");
+
 				jstring j_errorMessage = g_env->NewStringUTF(pRspInfo->ErrorMsg);
 				g_env->CallVoidMethod(paramObject, errorMessageId, j_errorMessage);
 
@@ -276,7 +267,6 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 		}
 
 		virtual void OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
-			printf("OnRspSubMarketData\n");
 			JNIEnv * g_env;
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
@@ -297,19 +287,15 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 				jobject &obj = *it;
 				
 				jclass cls = g_env->GetObjectClass(obj);
-				printf("getting callback ID for onSubscribeMarketDataResponse and param SubscribeMarketDataResponse\n");
 				jmethodID mid = g_env->GetMethodID(cls, "onSubscribeMarketDataResponse", "(Lbo/SubscribeMarketDataResponse;)V");
 
 				jclass parameter = g_env->FindClass("bo/SubscribeMarketDataResponse");
 			    jmethodID midConstructor = (g_env)->GetMethodID(parameter, "<init>", "()V");
 				jobject paramObject = (g_env)->NewObject(parameter, midConstructor);
 
-				printf("getting method ID's\n");
 				jmethodID errorIDId = g_env->GetMethodID(parameter, "setErrorId", "(I)V");
 				jmethodID errorMsgId = g_env->GetMethodID(parameter, "setErrorMsg", "(Ljava/lang/String;)V");
 				jmethodID specificInstrumentId = g_env->GetMethodID(parameter, "setSpecificInstrument", "(Ljava/lang/String;)V");
-
-				printf("invoking setters\n");
 
 				g_env->CallVoidMethod(paramObject, errorIDId, pRspInfo->ErrorID);
 				g_env->CallVoidMethod(paramObject, errorMsgId, g_env->NewStringUTF(pRspInfo->ErrorMsg));
