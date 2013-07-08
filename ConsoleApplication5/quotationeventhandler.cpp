@@ -4,7 +4,7 @@
 
 class quotationeventhandler : public CThostFtdcMdSpi{
 	public:
-		quotationeventhandler(CThostFtdcMdApi *pUserApi) :  m_pUserApi(pUserApi){}
+		quotationeventhandler(){}
 			~quotationeventhandler(){}
 
 		virtual void OnFrontConnected(){
@@ -14,16 +14,21 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 		}
 
 		virtual void OnFrontDisconnected(int nReason){
-			//printf("front disconnected");
+			printf("disconnected\n");
+			//SetEvent(end_hEvent);
 		}
 
 	
 
 		
+		virtual void OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+			printf("logout");
+			
+		}
 		
 
 		virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-			JNIEnv * g_env;
+			 JNIEnv * g_env;
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
 				jint attachSuccess = cachedJvm ->AttachCurrentThread((void**)&g_env, NULL);
@@ -51,9 +56,11 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 				jobject &obj = *it;
 				jclass cls = g_env->GetObjectClass(obj);
 				jmethodID mid = g_env->GetMethodID(cls, "onRspUserLogin", "(Lbo/LoginResponse;)V");
-								g_env->CallVoidMethod(obj, mid, paramObject);
-				it++;
-			}
+								g_env->CallVoidMethod(obj, mid, paramObject); 
+				it++; 
+			} 
+			cachedJvm->DetachCurrentThread();
+			printf("exiting onLogIn");
 			SetEvent(g_hEvent);
 
 			
@@ -214,7 +221,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 				it++;
 
 			}
-
+			cachedJvm->DetachCurrentThread();
 			//SetEvent(g_hEvent);
 			// set the flag when the quotation data received.
 			//SetEvent(CreateEvent(NULL, true, false, NULL));
@@ -223,6 +230,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 		virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
 			JNIEnv * g_env;
+			printf("error!!!!! %i", pRspInfo->ErrorID);
 			jint success = cachedJvm -> GetEnv((void**)&g_env, JNI_VERSION_1_6);
 			if(success != JNI_OK){
 			//	printf("attempting to resync jvm to thread\n");
@@ -264,6 +272,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 				it++;
 
 			}
+			cachedJvm->DetachCurrentThread();
 		}
 
 		virtual void OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
@@ -309,6 +318,7 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 				it++;
 
 			}
+			cachedJvm->DetachCurrentThread();
 		}
 
 		virtual void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
@@ -320,6 +330,6 @@ class quotationeventhandler : public CThostFtdcMdSpi{
 
 
 	private:
-		CThostFtdcMdApi *m_pUserApi;
+		//CThostFtdcMdApi *m_pUserApi;
 		
 };

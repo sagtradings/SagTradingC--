@@ -7,5 +7,6 @@
 
 using namespace std;
 extern HANDLE g_hEvent;
+extern HANDLE end_hEvent;
 extern list<jobject> observers;
 extern JavaVM * cachedJvm;

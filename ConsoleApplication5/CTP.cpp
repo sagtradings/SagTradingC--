@@ -8,7 +8,8 @@
 #include "globals.h"
 
 using namespace std;
-static JavaVM * cachedJvm;
+ JavaVM * cachedJvm;
+HANDLE end_hEvent = CreateEvent(NULL, true, false, NULL);
 HANDLE g_hEvent = CreateEvent(NULL, true, false, NULL);
 // participant ID
 
@@ -17,8 +18,8 @@ TThostFtdcBrokerIDType g_chBrokerID;
 TThostFtdcUserIDType g_chUserID;
 
 list<jobject> observers;
-CThostFtdcMdApi *pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
-quotationeventhandler sh(pUserApi);
+CThostFtdcMdApi *pUserApi = NULL;
+quotationeventhandler sh;
 
 
 
@@ -27,23 +28,32 @@ int main()
 	return 0;
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){
-	 
-	 pUserApi -> RegisterSpi(&sh);
-	 pUserApi -> RegisterFront("tcp://218.1.96.8:41213");
-	 printf("initing\n");
-	 pUserApi -> Init();
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){	 
+	if(pUserApi == NULL){
+		printf("pUserApi is null!");
+		pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
+		pUserApi -> RegisterSpi(&sh);
+		pUserApi -> RegisterFront("tcp://218.1.96.8:41213");
+		printf("initing\n");
+		pUserApi -> Init();
+		WaitForSingleObject(g_hEvent, INFINITE);
+		ResetEvent(g_hEvent);
 
-	 WaitForSingleObject(g_hEvent, INFINITE);
-	 ResetEvent(g_hEvent);
+		//ResetEvent(g_hEvent);
+		 //ResetEvent(g_hEvent);
+		
+	}
+			CThostFtdcReqUserLoginField reqUserLogin;
+		strcpy_s(reqUserLogin.UserID, env->GetStringUTFChars(investorId, false));
+		strcpy_s(reqUserLogin.Password, env->GetStringUTFChars(password, false));
+		strcpy_s(reqUserLogin.BrokerID, env->GetStringUTFChars(brokerId, false));
+		pUserApi->ReqUserLogin(&reqUserLogin, 0);
+		WaitForSingleObject(g_hEvent, INFINITE);
 
-	 CThostFtdcReqUserLoginField reqUserLogin;
-	 strcpy_s(reqUserLogin.UserID, env->GetStringUTFChars(investorId, false));
-	 strcpy_s(reqUserLogin.Password, env->GetStringUTFChars(password, false));
-	 strcpy_s(reqUserLogin.BrokerID, env->GetStringUTFChars(brokerId, false));
-	 pUserApi->ReqUserLogin(&reqUserLogin, 0);
-	 WaitForSingleObject(g_hEvent, INFINITE);
-	 ResetEvent(g_hEvent);
+
+
+
+	 printf("done logging in\n");
 	
 }
 
@@ -58,12 +68,15 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_subscribe
 }
 
 JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_unSubscribeListener(JNIEnv *env, jobject caller, jobject subscriber){
-		for(list<jobject>::iterator it = observers.begin(); it != observers.end(); ++it){
-			if(env->IsSameObject(*it, subscriber)){
-				observers.erase(it);
-				return;
-			}
-		}
+	if(pUserApi != NULL) {
+		//pUserApi->Release();
+
+		//pUserApi = NULL;
+		observers.clear();
+	}
+	cachedJvm->DetachCurrentThread();
+	
+	
 }
 //
 JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendQuoteRequest
@@ -122,6 +135,6 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendUnsub
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved){
 	cachedJvm = jvm;
 	//printf("JVM on load");
-	return JNI_VERSION_1_1;
-;
+	return JNI_VERSION_1_6;
+
 }
