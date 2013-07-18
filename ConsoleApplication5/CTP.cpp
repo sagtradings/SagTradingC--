@@ -33,7 +33,7 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLogin
 		printf("pUserApi is null!");
 		pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
 		pUserApi -> RegisterSpi(&sh);
-		pUserApi -> RegisterFront("tcp://218.1.96.8:41213");
+		pUserApi -> RegisterFront("tcp://180.166.165.179:41213");
 		printf("initing\n");
 		pUserApi -> Init();
 		WaitForSingleObject(g_hEvent, INFINITE);
