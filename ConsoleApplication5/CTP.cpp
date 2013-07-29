@@ -28,19 +28,23 @@ int main()
 	return 0;
 }
 
-JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId){	 
+JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage(JNIEnv *env, jobject caller, jstring brokerId, jstring password, jstring investorId, jstring connectionUrl){	 
 	if(pUserApi == NULL){
 		printf("pUserApi is null!");
 		pUserApi = CThostFtdcMdApi::CreateFtdcMdApi();
 		pUserApi -> RegisterSpi(&sh);
-		pUserApi -> RegisterFront("tcp://180.166.165.179:41213");
+		//int urlLength = env->GetStringLength(connectionUrl);
+		int urlLength = env->GetStringLength(connectionUrl);
+		char * writable = new char[urlLength + 1];
+		printf("the length is %i", urlLength);
+		writable[urlLength + 1] = '\0';
+		strcpy_s(writable, urlLength + 1, env->GetStringUTFChars(connectionUrl, false));
+		pUserApi ->RegisterFront(writable);
 		printf("initing\n");
 		pUserApi -> Init();
 		WaitForSingleObject(g_hEvent, INFINITE);
 		ResetEvent(g_hEvent);
-
-		//ResetEvent(g_hEvent);
-		 //ResetEvent(g_hEvent);
+		delete[] writable;
 		
 	}
 			CThostFtdcReqUserLoginField reqUserLogin;

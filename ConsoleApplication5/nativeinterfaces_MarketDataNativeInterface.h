@@ -26,10 +26,10 @@ JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_unSubscri
 /*
  * Class:     nativeinterfaces_MarketDataNativeInterface
  * Method:    sendLoginMessage
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_nativeinterfaces_MarketDataNativeInterface_sendLoginMessage
-  (JNIEnv *, jobject, jstring, jstring, jstring);
+  (JNIEnv *, jobject, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     nativeinterfaces_MarketDataNativeInterface
